@@ -89,6 +89,8 @@ public:
 	void	clear_subbed_bars();
 	void	update_bars(const char* stdCode, WTSTickData* newTick);
 
+	void	clear_cache();
+
 private:
 	IRdmDtReader*			_reader;
 	FuncDeleteRdmDtReader	_remover;
@@ -96,6 +98,7 @@ private:
 	IBaseDataMgr*	_bd_mgr;
 	IHotMgr*		_hot_mgr;
 	WtDtRunner*		_runner;
+	bool			_align_by_section;
 
 	//KÏß»º´æ
 	typedef struct _BarCache
@@ -107,10 +110,10 @@ private:
 
 		_BarCache():_last_bartime(0),_period(KP_DAY),_times(1),_bars(NULL){}
 	} BarCache;
-	typedef faster_hashmap<std::string, BarCache>	BarCacheMap;
+	typedef wt_hashmap<std::string, BarCache>	BarCacheMap;
 	BarCacheMap	_bars_cache;
 
-	typedef WTSHashMap<LongKey>	RtBarMap;
+	typedef WTSHashMap<std::string>	RtBarMap;
 	RtBarMap*		_rt_bars;
 	StdUniqueMutex	_mtx_rtbars;
 };

@@ -18,6 +18,7 @@
 #include <string>
 #include <string.h>
 #include<chrono>
+#include <thread>
 
 #ifdef _MSC_VER
 #define CTIME_BUF_SIZE 64
@@ -54,7 +55,7 @@ class TimeUtils
 public:
 	static inline int64_t getLocalTimeNowOld(void)
 	{
-		timeb now;
+		thread_local static timeb now;
 		ftime(&now);
 		return now.time * 1000 + now.millitm;
 	}
@@ -76,9 +77,15 @@ public:
 		t = t - 11644473600L * TICKSPERSEC;
 		return t / 10000;
 #else
-		timeb now;
-		ftime(&now);
-		return now.time * 1000 + now.millitm;
+		//timeb now;
+		//ftime(&now);
+		//return now.time * 1000 + now.millitm;
+		/*
+		 *	clock_gettime比ftime会提升约10%的性能
+		 */
+		thread_local static struct timespec now;
+		clock_gettime(CLOCK_REALTIME, &now);
+		return now.tv_sec * 1000 + now.tv_nsec / 1000000;
 #endif
 	}
 
@@ -365,7 +372,7 @@ public:
 		void from_local_time(uint64_t _time)
 		{
 			time_t _t = _time/1000;
-			_msec = (uint32_t)_time%1000;
+			_msec = (uint32_t)(_time%1000);
 #ifdef _WIN32
 			localtime_s(&t, &_t);
 #else
